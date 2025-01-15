@@ -1,0 +1,23 @@
+apiVersion: tokens.osg-htc.org/v1
+kind: JWT
+metadata:
+  name: my-jwt
+spec:
+  issuer: my-jwt-signer
+  data:
+    username: john.doe
+    role: admin
+    scope: "read:/ write:/"
+  expiryTime:
+    days: 1
+  resignBefore:
+    days: 1
+  keyId: my-jwt-key
+  algorithm: ES256
+  key:
+    value: |
+      -----BEGIN EC PRIVATE KEY-----
+      MHcCAQEEIIphQalRpd3lclrnNmbR8df1/iljebEgI/CLxsmfd4GYoAoGCCqGSM49
+      AwEHoUQDQgAEdN/1YF8Q1BGJdmL9zWDMi5D+2Nfc6iAAXXFvA88HPElN+eOxHy0m
+      D1ygqiC82+ZMBTqt9l5dn6JFpd2AawPi7A==
+      -----END EC PRIVATE KEY-----

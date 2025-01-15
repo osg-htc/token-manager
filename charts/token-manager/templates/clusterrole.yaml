@@ -1,7 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: {{ .Chart.Name }}-cluster-role
+  name: {{ .Chart.Name }}-role
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -9,8 +10,8 @@ rules:
   - apiGroups: [""]
     resources: ["configMap"]
     verbs: ["get"]
-  - apiGroups: ["k8s.chximn.pro"]
-    resources: ["jwts", "jwt-signers"]
+  - apiGroups: ["tokens.osg-htc.org"]
+    resources: ["jwts"]
     verbs: ["watch", "get", "list", "patch"]
   - apiGroups: [""]
     resources: [events]

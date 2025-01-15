@@ -2,7 +2,7 @@ import kopf
 import kubernetes.config as k8s_config
 import kubernetes.client as k8s_client
 from os import getenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 from base64 import b64decode
 import logging
@@ -11,16 +11,19 @@ import pytz
 API_GROUP = getenv("API_GROUP")
 API_GROUP_VERSION = getenv("API_GROUP_VERSION")
 JWT_CRD = getenv("JWT_CRD")
-JWT_SIGNER_CRD = getenv("JWT_SIGNER_CRD")
 
-def create_access_token(data: dict, expires_delta: timedelta, sk, algorithm):    
+def create_access_token(data: dict, expires_delta: timedelta, sk, algorithm, kid: str):    
     # update data with expiry time
     to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
+    expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     
+    headers = {
+        "kid": kid
+    }
+
     # encode jwt
-    encoded_jwt = jwt.encode(to_encode, sk, algorithm=algorithm)
+    encoded_jwt = jwt.encode(to_encode, sk, algorithm=algorithm, headers=headers)
     return encoded_jwt
 
 def upsert_secret(secret: k8s_client.V1Secret):
@@ -82,34 +85,20 @@ def resolve_jwt_signer_key(keyref: dict):
     elif 'value' in keyref:
         return keyref['value']
 
-def get_jwt_signer_data(namespace, name):
-    api_instance = k8s_client.CustomObjectsApi()
-    
-    try:
-        signer = api_instance.get_namespaced_custom_object(API_GROUP, API_GROUP_VERSION, namespace, JWT_SIGNER_CRD, name)
-    except k8s_client.exceptions.ApiException as e:
-        if e.status == 404:
-            raise kopf.TemporaryError("JTWSigner %s not found in namespace %s" % (name, namespace))
-        else:
-            raise kopf.TemporaryError("Unexcepted ApiException Error")
 
-    algorithm = signer['spec']['algorithm']
-    key = resolve_jwt_signer_key(signer['spec']['key'])
+def create_token_and_upsert_secret(namespace: str, spec: dict):
+    algorithm = spec['algorithm']
+    sk = resolve_jwt_signer_key(spec['key'])
+    kid = spec['keyId']
 
-    return key, algorithm
-
-
-def create_token_and_upsert_secret(namespace, spec: dict):
-    sk, algorithm = get_jwt_signer_data(namespace, spec['signer'])
-    token = create_access_token(spec['data'], parse_deltatime(spec['expiryTime']), sk, algorithm)
-
+    token = create_access_token(spec['data'], parse_deltatime(spec['expiryTime']), sk, algorithm, kid)
 
     key = API_GROUP + '/last-signing-time'
     metadata = k8s_client.V1ObjectMeta(
-        name=spec['secretName'],
+        #name=spec['secretName'],
         namespace=namespace,
         annotations={
-            key: str(datetime.utcnow().timestamp())
+            key: str(datetime.now(timezone.utc).timestamp())
         }
     )
     
@@ -119,9 +108,16 @@ def create_token_and_upsert_secret(namespace, spec: dict):
         string_data={'token':token},
         metadata=metadata
     )
+    kopf.harmonize_naming(secret, strict=True, forced=True)
+
+    # Adopt the secret
+    kopf.adopt(secret)
 
     upsert_secret(secret)
 
+
+# Handlers
+# Whether the object is created or updated, we need to create the token and upsert the secret
 @kopf.on.create(API_GROUP, API_GROUP_VERSION, JWT_CRD)
 def on_create(namespace, spec, body, **kwargs):
     create_token_and_upsert_secret(namespace, spec)
@@ -130,19 +126,12 @@ def on_create(namespace, spec, body, **kwargs):
 def on_update(namespace, name, spec, status, **kwargs):
     create_token_and_upsert_secret(namespace, spec)
 
-@kopf.on.delete(API_GROUP, API_GROUP_VERSION, JWT_CRD)
-def on_delete(namespace, name, spec, **kwargs):
-    api_instance = k8s_client.CoreV1Api()
-    
-    try:
-        api_instance.read_namespaced_secret(spec['secretName'], namespace)
-        api_instance.delete_namespaced_secret(spec['secretName'], namespace)
-    except k8s_client.exceptions.ApiException as e:
-        if e.status != 404:
-            raise kopf.TemporaryError("Unexcepted ApiException Error")
 
 @kopf.timer(API_GROUP, API_GROUP_VERSION, JWT_CRD, interval=60)
 def on_timer_jwt(namespace, name, spec, body, status, **kwargs):
+    """
+    Every minute, check all the tokens and resign them if needed
+    """
     if 'resignBefore' in spec:
         resignBefore = parse_deltatime(spec['resignBefore'])
         expiryTime = parse_deltatime(spec['expiryTime'])
@@ -153,7 +142,7 @@ def on_timer_jwt(namespace, name, spec, body, status, **kwargs):
         
         api_instance = k8s_client.CoreV1Api()
         try:
-            secret = api_instance.read_namespaced_secret(spec['secretName'], namespace)
+            secret = api_instance.read_namespaced_secret(name, namespace)
             if (API_GROUP + '/last-signing-time') in secret.metadata.annotations:
                 secret_created_at = secret.metadata.annotations[API_GROUP + '/last-signing-time']
             else:
@@ -167,18 +156,10 @@ def on_timer_jwt(namespace, name, spec, body, status, **kwargs):
         if secret_created_at is not None:
             now = datetime.utcnow().replace(tzinfo=pytz.utc)
             then = datetime.fromtimestamp(float(secret_created_at)).replace(tzinfo=pytz.utc) + expiryTime
-
             if now >= then - resignBefore:
                 logging.info("Resigned token")
                 create_token_and_upsert_secret(namespace, spec)
 
-@kopf.on.update(API_GROUP, API_GROUP_VERSION, JWT_SIGNER_CRD)
-def on_update_signer(namespace, name, spec, status, **kwargs):
-    api_instance = k8s_client.CustomObjectsApi()
-    jwts = api_instance.list_namespaced_custom_object(API_GROUP, API_GROUP_VERSION, namespace, JWT_CRD)
-    
-    for jwt in jwts['items']:
-        create_token_and_upsert_secret(namespace, jwt['spec'])
 
 def load_config():
     try:

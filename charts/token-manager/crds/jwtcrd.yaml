@@ -1,13 +1,13 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: jwts.{{ .Values.apiGroup.name }}
+  name: jwts.tokens.osg-htc.org
   finalizers: []
 spec:
-  group: {{ .Values.apiGroup.name }}
+  group: tokens.osg-htc.org
   scope: Namespaced
   versions:
-    - name: {{ .Values.apiGroup.version }}
+    - name: v1
       served: true
       storage: true
       schema:
@@ -16,15 +16,48 @@ spec:
           properties:
             spec:
               type: object
-              required: ['signer', 'data', 'secretName', 'expiryTime']
+              required: ['issuer', 'data', 'expiryTime', 'keyId', 'algorithm', 'key']
               properties:
-                signer:
+                issuer:
                   type: string
                 data:
                   type: object
                   additionalProperties: true
-                secretName:
+                keyId:
                   type: string
+                algorithm:
+                  type: string
+                  enum: [RS256, ES256]
+                key:
+                  type: object
+                  properties:
+                    secret:
+                      type: object
+                      properties:
+                        namespace:
+                          type: string
+                        name:
+                          type: string
+                        key:
+                          type: string
+
+                    configMap:
+                      type: object
+                      properties:
+                        namespace:
+                          type: string
+                        name:
+                          type: string
+                        key:
+                          type: string
+
+                    value:
+                      type: string
+
+                  oneOf:
+                    - required: ['secret']
+                    - required: ['configMap']
+                    - required: ['value']
                 expiryTime:
                   type: object
                   properties:
