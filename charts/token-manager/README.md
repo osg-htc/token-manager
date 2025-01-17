@@ -58,7 +58,7 @@ spec:
   expiryTime:
     days: 1
   resignBefore:
-    hours: 1
+    hours: 5
   algorithm: RS256
   key:
     value: |

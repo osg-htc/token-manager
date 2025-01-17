@@ -58,7 +58,7 @@ spec:
   expiryTime:
     days: 1
   resignBefore:
-    days: 1
+    hours: 5
   keyId: my-jwt-key
   algorithm: ES256
   key:
