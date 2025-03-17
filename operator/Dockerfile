@@ -6,4 +6,4 @@ WORKDIR /app
 ENV API_GROUP=tokens.osg-htc.org
 ENV API_GROUP_VERSION=v1
 ENV JWT_CRD=jwts
-ENTRYPOINT kopf run --namespace ${NAMESPACE} operator.py
+ENTRYPOINT kopf run operator.py

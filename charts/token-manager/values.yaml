@@ -1,5 +1,5 @@
 image:
-  repository: djw8605/jwt-manager
+  repository: opensciencegrid/jwt-manager
   pullPolicy: Always
   tag: "latest"
 
