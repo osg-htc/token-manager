@@ -1,5 +1,5 @@
 image:
-  repository: opensciencegrid/jwt-manager
+  repository: opensciencegrid/token-manager
   pullPolicy: Always
   tag: "latest"
 
