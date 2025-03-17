@@ -14,7 +14,7 @@ To install the Token Manager chart, follow these steps:
 1. Add the Helm repository:
 
 ```shell
-helm repo add token-manager https://osg-htc.github.org/token-manager
+helm repo add token-manager https://osg-htc.github.io/token-manager
 ```
 
 2. Update the Helm repositories:
