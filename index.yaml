@@ -3,12 +3,12 @@ entries:
   token-manager:
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2025-01-15T16:14:31.22388-06:00"
+    created: "2025-03-17T13:30:01.038722-05:00"
     description: Token Manager
     digest: edf69dc40e1798ce2b18b097cff6473ee6413f1e9d4ff4842f9419a40935b559
     name: token-manager
     type: application
     urls:
-    - charts/token-manager-1.0.0.tgz
+    - https://osg-htc.github.io/token-manager/charts/token-manager-1.0.0.tgz
     version: 1.0.0
-generated: "2025-01-15T16:14:31.222576-06:00"
+generated: "2025-03-17T13:30:01.037981-05:00"
