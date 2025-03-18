@@ -3,7 +3,17 @@ entries:
   token-manager:
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2025-03-17T22:05:14.790611-05:00"
+    created: "2025-03-17T22:29:59.830409-05:00"
+    description: Token Manager
+    digest: bcccef2b8dd60531cf3126589cd81cc3736e3d134d3be68ff673e607d12b0ea4
+    name: token-manager
+    type: application
+    urls:
+    - https://osg-htc.github.io/token-manager/charts/token-manager-1.0.4.tgz
+    version: 1.0.4
+  - apiVersion: v2
+    appVersion: 2.0.0
+    created: "2025-03-17T22:29:59.830015-05:00"
     description: Token Manager
     digest: a85b648589aced55916f5a4ecce14679d988dfb495726b26f20f6f9ddb81e899
     name: token-manager
@@ -13,7 +23,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2025-03-17T13:52:59.978322-05:00"
+    created: "2025-03-17T22:29:59.829752-05:00"
     description: Token Manager
     digest: b6be3aa3bc15c7becf05782c2aa2d47880710560e2f6c4258ac855a3651770e8
     name: token-manager
@@ -23,7 +33,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2025-03-17T13:52:59.977932-05:00"
+    created: "2025-03-17T22:29:59.829458-05:00"
     description: Token Manager
     digest: 7ac338021b168e937198b24ea3d5d60164e5fc7f6e95609f4a686dc93b60a495
     name: token-manager
@@ -33,7 +43,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2025-03-17T13:52:59.977408-05:00"
+    created: "2025-03-17T22:29:59.828816-05:00"
     description: Token Manager
     digest: edf69dc40e1798ce2b18b097cff6473ee6413f1e9d4ff4842f9419a40935b559
     name: token-manager
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://osg-htc.github.io/token-manager/charts/token-manager-1.0.0.tgz
     version: 1.0.0
-generated: "2025-03-17T13:52:59.976287-05:00"
+generated: "2025-03-17T22:29:59.827569-05:00"
