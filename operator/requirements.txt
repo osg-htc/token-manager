@@ -1,5 +1,5 @@
 python-jose[cryptography]
 httpx
-kopf
+kopf[full-auth]
 kubernetes
 pytz

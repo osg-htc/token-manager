@@ -8,6 +8,8 @@ from base64 import b64decode
 import logging
 import pytz
 
+logging.basicConfig(level=logging.DEBUG)
+
 API_GROUP = getenv("API_GROUP")
 API_GROUP_VERSION = getenv("API_GROUP_VERSION")
 JWT_CRD = getenv("JWT_CRD")
