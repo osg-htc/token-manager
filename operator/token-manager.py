@@ -20,12 +20,13 @@ def create_access_token(data: dict, expires_delta: timedelta, sk, algorithm, kid
     # update data with expiry time
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
+    now = datetime.now(timezone.utc)
 
     # Add a few of the standard claims, exp, nbf, iat, jti
     to_encode.update({
         "exp": expire,
-        "nbf": datetime.now(timezone.utc) - timedelta(seconds=NBF_LEEWAY),
-        "iat": datetime.now(timezone.utc),
+        "nbf": now - timedelta(seconds=NBF_LEEWAY),
+        "iat": now,
         "jti": uuid.uuid4()
     })
     

@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-slim
 ADD requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 ADD token-manager.py /app/token-manager.py
