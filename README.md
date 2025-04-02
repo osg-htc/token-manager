@@ -38,9 +38,12 @@ The JWT CRD allows you to create, update, and delete JWTs. It has the following 
 * `data`: The data to include in the JWT payload.
 * `expiryTime`: The expiration time for the JWT. It can be specified in terms of days, hours, or minutes.
 * `resignBefore`: The automation resigning time for the JWT before the expiryTime. It can be specified in terms of days, hours, or minutes.  This is the amount of time before the expiration time that the JWT should be resigned.  So an expiry time of 1 day and a resignBefore time of 1 hour would mean that the JWT would be resigned 1 hour before the 24 hour expiration.
-* `key`: The key used for encryption. It can be provided as a secret, a config map, or a direct value.
 * `algorithm`: The encryption algorithm to use for signing the JWT.
 * `keyId`: The key ID to use for signing the JWT.
+* `key`: The key used for encryption. It can be provided as a secret, a config map, or a direct value.  
+  - **Secret**: Specify the key as a Kubernetes secret reference.  
+  - **ConfigMap**: Specify the key as a Kubernetes ConfigMap reference.  
+  - **Direct Value**: Provide the key directly in the resource specification.
 
 Example JWT resource:
 
@@ -50,11 +53,16 @@ kind: JWT
 metadata:
   name: my-jwt
 spec:
-  issuer: my-jwt-signer
+  issuer: https://issuer.example.com/
+  keyId: my-jwt-key
   data:
     username: john.doe
     role: admin
-    scope: "read:/ write:/"
+    scope: "storage.read:/ storage.create:/"
+    sub: john.doe
+    aud:
+      - "https://wlcg.cern.ch/jwt/v1/any"
+    wlcg.ver: "1.0"
   expiryTime:
     days: 1
   resignBefore:
@@ -68,4 +76,34 @@ spec:
       AwEHoUQDQgAEdN/1YF8Q1BGJdmL9zWDMi5D+2Nfc6iAAXXFvA88HPElN+eOxHy0m
       D1ygqiC82+ZMBTqt9l5dn6JFpd2AawPi7A==
       -----END EC PRIVATE KEY-----
+```
+
+Example using a secret for the key:
+
+```yaml
+apiVersion: tokens.osg-htc.org/v1
+kind: JWT
+metadata:
+  name: my-jwt
+spec:
+  issuer: https://issuer.example.com/
+  keyId: my-jwt-key
+  data:
+    username: john.doe
+    role: admin
+    scope: "storage.read:/ storage.create:/"
+    sub: john.doe
+    aud:
+      - "https://wlcg.cern.ch/jwt/v1/any"
+    wlcg.ver: "1.0"
+  expiryTime:
+    days: 1
+  resignBefore:
+    hours: 5
+  keyId: my-jwt-key
+  algorithm: ES256
+  key:
+    secretRef:
+      name: my-jwt-secret
+      key: privateKey
 ```
