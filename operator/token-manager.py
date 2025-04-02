@@ -3,7 +3,8 @@ import kubernetes.config as k8s_config
 import kubernetes.client as k8s_client
 from os import getenv
 from datetime import datetime, timedelta, timezone
-from jose import jwt
+import jwt
+import uuid
 from base64 import b64decode
 import logging
 import pytz
@@ -13,12 +14,20 @@ logging.basicConfig(level=logging.DEBUG)
 API_GROUP = getenv("API_GROUP")
 API_GROUP_VERSION = getenv("API_GROUP_VERSION")
 JWT_CRD = getenv("JWT_CRD")
+NBF_LEEWAY = 60
 
 def create_access_token(data: dict, expires_delta: timedelta, sk, algorithm, kid: str):    
     # update data with expiry time
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
-    to_encode.update({"exp": expire})
+
+    # Add a few of the standard claims, exp, nbf, iat, jti
+    to_encode.update({
+        "exp": expire,
+        "nbf": datetime.now(timezone.utc) - timedelta(seconds=NBF_LEEWAY),
+        "iat": datetime.now(timezone.utc),
+        "jti": uuid.uuid4()
+    })
     
     headers = {
         "kid": kid
