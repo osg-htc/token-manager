@@ -27,7 +27,7 @@ def create_access_token(data: dict, expires_delta: timedelta, sk, algorithm, kid
         "exp": expire,
         "nbf": now - timedelta(seconds=NBF_LEEWAY),
         "iat": now,
-        "jti": uuid.uuid4()
+        "jti": str(uuid.uuid4())
     })
     
     headers = {
