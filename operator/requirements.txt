@@ -1,4 +1,4 @@
-python-jose[cryptography]
+PyJWT
 httpx
 kopf[full-auth]
 kubernetes
